@@ -30,7 +30,7 @@ def get_archive_file_paths(src_dir: Path) -> list[Path]:
     return [src_dir / _ for _ in os.listdir(src_dir)]
 
 
-def parse_xml(tree: et.ElementTree) -> ArchiveData:
+def parse_xml(tree: et.Element) -> ArchiveData:
     id_elem = tree.findall("./var[@name='id']")[0]
     level_elem = tree.findall("./var[@name='level']")[0]
     object_elements = tree.findall("./objects/object")
