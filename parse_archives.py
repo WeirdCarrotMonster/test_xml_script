@@ -93,6 +93,9 @@ def main() -> None:
     process_pool = Pool(processes=args.processes)
 
     for result in process_pool.imap_unordered(parse_archive, archive_files):
+        if not result:
+            continue
+
         level_csv.writerow([result.id, result.level])
 
         for object_name in result.object_names:
