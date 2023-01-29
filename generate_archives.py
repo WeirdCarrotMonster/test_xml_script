@@ -11,20 +11,15 @@ ARCHIVE_COUNT = 50
 XML_COUNT = 100
 
 
-def prepare_target_directory(dir_path: str) -> Path:
-    path = Path(dir_path)
+def prepare_target_directory(dir_path: Path) -> None:
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
 
-    if not os.path.exists(path):
-        os.mkdir(path)
-        return path
-
-    if not os.path.isdir(path):
+    if not os.path.isdir(dir_path):
         raise Exception("Path is not a directory")
 
-    if os.listdir(path):
+    if os.listdir(dir_path):
         raise Exception("Directory is not empty")
-
-    return path
 
 
 def generate_random_id() -> str:
@@ -66,7 +61,7 @@ def generate_xml_archive(archive_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("target", type=str, help="Path to directory for archives")
+    parser.add_argument("target", type=Path, help="Path to directory for archives")
     parser.add_argument(
         "--archive-count",
         type=int,
@@ -82,10 +77,10 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    target_directory = prepare_target_directory(args.target)
+    prepare_target_directory(args.target)
     for archive_id in range(args.archive_count):
         archive_name = f"{archive_id}.zip"
-        archive_path = target_directory / archive_name
+        archive_path = args.target / archive_name
         generate_xml_archive(archive_path)
 
 
