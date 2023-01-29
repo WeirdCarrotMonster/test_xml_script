@@ -40,8 +40,8 @@ def get_random_object_count() -> int:
 
 def generate_xml() -> et.Element:
     root = et.Element("root")
-    et.SubElement(root, "val", name="id", value=generate_random_id())
-    et.SubElement(root, "val", name="level", value=str(generate_random_level()))
+    et.SubElement(root, "var", name="id", value=generate_random_id())
+    et.SubElement(root, "var", name="level", value=str(generate_random_level()))
 
     objects_element = et.SubElement(root, "objects")
     objects_count = get_random_object_count()
