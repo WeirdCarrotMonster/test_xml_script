@@ -52,20 +52,30 @@ def parse_xml(tree: et.ElementTree) -> ArchiveData:
     )
 
 
-def parse_archive(archive_path: Path) -> ArchiveData | None:
+def parse_archive(archive_path: Path) -> list[ArchiveData]:
+    xml_trees: list[etree.Element] = []
     try:
         with zipfile.ZipFile(archive_path, "r") as archive:
-            with archive.open("data.xml", "r") as data_xml:
-                tree = et.parse(data_xml)
+            for archived_file in archive.namelist():
+                if not archived_file.endswith(".xml"):
+                    continue
+                try:
+                    with archive.open(archived_file, "r") as data_xml:
+                        tree = et.parse(data_xml)
+                        xml_trees.append(tree)
+                except Exception as error:
+                    logger.exception("Failed to read XML from archive: %s", error)
     except Exception as error:
-        logger.exception("Failed to read XML from archive: %s", error)
-        return None
+        logger.exception("Failed to open archive: %s", error)
 
-    try:
-        result = parse_xml(tree)
-    except Exception as error:
-        logger.exception("Failed to parse XML structure: %s", error)
-        return None
+    result: list[ArchiveData] = []
+    for tree in xml_trees:
+        try:
+            parse_result = parse_xml(tree)
+        except Exception as error:
+            logger.exception("Failed to parse XML structure: %s", error)
+            continue
+        result.append(parse_result)
 
     return result
 
@@ -92,14 +102,12 @@ def main() -> None:
 
     process_pool = Pool(processes=args.processes)
 
-    for result in process_pool.imap_unordered(parse_archive, archive_files):
-        if not result:
-            continue
+    for result_list in process_pool.imap_unordered(parse_archive, archive_files):
+        for result in result_list:
+            level_csv.writerow([result.id, result.level])
 
-        level_csv.writerow([result.id, result.level])
-
-        for object_name in result.object_names:
-            object_csv.writerow([result.id, object_name])
+            for object_name in result.object_names:
+                object_csv.writerow([result.id, object_name])
 
 
 if __name__ == "__main__":

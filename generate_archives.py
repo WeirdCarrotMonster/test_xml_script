@@ -52,11 +52,11 @@ def generate_xml() -> et.Element:
     return root
 
 
-def generate_xml_archive(archive_path: Path) -> None:
-    xml_tree = generate_xml()
-
+def generate_xml_archive(archive_path: Path, xml_count: int) -> None:
     with zipfile.ZipFile(archive_path, "w") as archive:
-        archive.writestr("data.xml", et.tostring(xml_tree))
+        for xml_index in range(xml_count):
+            xml_tree = generate_xml()
+            archive.writestr(f"{xml_index}.xml", et.tostring(xml_tree))
 
 
 def main() -> None:
@@ -81,7 +81,7 @@ def main() -> None:
     for archive_id in range(args.archive_count):
         archive_name = f"{archive_id}.zip"
         archive_path = args.target / archive_name
-        generate_xml_archive(archive_path)
+        generate_xml_archive(archive_path, args.xml_count)
 
 
 if __name__ == "__main__":
