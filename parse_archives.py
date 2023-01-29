@@ -6,6 +6,7 @@ import os.path
 import xml.etree.ElementTree as et
 import zipfile
 from dataclasses import dataclass
+from multiprocessing.pool import Pool
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -78,6 +79,9 @@ def main() -> None:
     parser.add_argument(
         "object_csv", type=argparse.FileType("w"), help="Path to objects CSV"
     )
+    parser.add_argument(
+        "--processes", type=int, default=None, help="Number of parser processes"
+    )
 
     args = parser.parse_args()
 
@@ -86,9 +90,9 @@ def main() -> None:
     level_csv = csv.writer(args.level_csv)
     object_csv = csv.writer(args.object_csv)
 
-    for archive in archive_files:
-        result = parse_archive(archive)
+    process_pool = Pool(processes=args.processes)
 
+    for result in process_pool.imap_unordered(parse_archive, archive_files):
         level_csv.writerow([result.id, result.level])
 
         for object_name in result.object_names:
