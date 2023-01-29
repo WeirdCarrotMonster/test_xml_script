@@ -42,7 +42,7 @@ def parse_xml(tree: et.ElementTree) -> ArchiveData:
         raise ValueError("Invalid level value")
 
     object_names = [obj.get("name") for obj in object_elements]
-    if not all([name for name in object_names]):
+    if not all(object_names):
         raise ValueError("Invalid object name")
 
     return ArchiveData(
